@@ -1,67 +1,67 @@
 class group (G : Type u) :=
-  (one : G)
+  (id : G)
   (inv : G → G)
-  (mul : G → G → G)
-  mul_assoc : ∀ (a b c : G), mul (mul a b) c = mul a (mul b c)
-  one_mul : ∀ (a : G), mul one a = a
-  mul_left_inv (a : G) : mul (inv a) a = one
+  (binop : G → G → G)
+  binop_assoc : ∀ (a b c : G), binop (binop a b) c = binop a (binop b c)
+  id_binop : ∀ (a : G), binop id a = a
+  binop_left_inv (a : G) : binop (inv a) a = id
 
-attribute [simp] group.one_mul group.mul_left_inv
-infixl : 75 "⊙" => group.mul
+attribute [simp] group.id_binop group.binop_left_inv
+infixl : 75 "⊙" => group.binop
 variable {S : Type u} [group S]
 
 namespace group
 
-@[simp] theorem mul_left_cancel (a b c : S) (h1 : a ⊙ b = a ⊙ c) : b = c :=
-calc b = one ⊙ b := by rw [one_mul b]
-     _ = ((inv a) ⊙ a) ⊙ b := by rw [mul_left_inv]
-     _ = (inv a) ⊙ (a ⊙ b) := by rw [mul_assoc]
+@[simp] theorem binop_left_cancel (a b c : S) (h1 : a ⊙ b = a ⊙ c) : b = c :=
+calc b = id ⊙ b := by rw [id_binop b]
+     _ = ((inv a) ⊙ a) ⊙ b := by rw [binop_left_inv]
+     _ = (inv a) ⊙ (a ⊙ b) := by rw [binop_assoc]
      _ = (inv a) ⊙ (a ⊙ c) := by rw [h1]
-     _ = ((inv a) ⊙ a) ⊙ c := by rw [mul_assoc]
-     _ = one ⊙ c := by rw [mul_left_inv]
-     _ = c := by rw [one_mul]
+     _ = ((inv a) ⊙ a) ⊙ c := by rw [binop_assoc]
+     _ = id ⊙ c := by rw [binop_left_inv]
+     _ = c := by rw [id_binop]
 
-theorem mul_eq_of_eq_inv_mul (a x y : S) (h1 : x = (inv a) ⊙ y) : a ⊙ x = y := by
-apply mul_left_cancel (inv a)
-rw [← mul_assoc,mul_left_inv,one_mul]
+theorem binop_eq_of_eq_inv_binop (a x y : S) (h1 : x = (inv a) ⊙ y) : a ⊙ x = y := by
+apply binop_left_cancel (inv a)
+rw [← binop_assoc,binop_left_inv,id_binop]
 exact h1
 
-@[simp] theorem mul_one (a : S) : a ⊙ one = a := by
-apply mul_eq_of_eq_inv_mul
-rw [mul_left_inv]
+@[simp] theorem binop_id (a : S) : a ⊙ id = a := by
+apply binop_eq_of_eq_inv_binop
+rw [binop_left_inv]
 
-@[simp] theorem mul_right_inv (a : S) : a ⊙ (inv a) = one := by
-apply mul_eq_of_eq_inv_mul
-rw [mul_one]
+@[simp] theorem binop_right_inv (a : S) : a ⊙ (inv a) = id := by
+apply binop_eq_of_eq_inv_binop
+rw [binop_id]
 
-@[simp] theorem inv_mul_cancel_left (a b : S) : (inv a) ⊙ (a ⊙ b) = b := by
-rw [← mul_assoc]
+@[simp] theorem inv_binop_cancel_left (a b : S) : (inv a) ⊙ (a ⊙ b) = b := by
+rw [← binop_assoc]
 simp
 
-@[simp] theorem mul_inv_cancel_left (a b : S) : a ⊙ ((inv a) ⊙ b) = b := by
-rw [← mul_assoc]
+@[simp] theorem binop_inv_cancel_left (a b : S) : a ⊙ ((inv a) ⊙ b) = b := by
+rw [← binop_assoc]
 simp
 
-@[simp] theorem inv_mul (a b : S) : inv (a ⊙ b) = (inv b) ⊙ (inv a) := by
-rw [← one_mul (inv b), mul_assoc]
-rw [← mul_left_inv (a ⊙ b),mul_assoc]
-rw [mul_assoc]
+@[simp] theorem inv_binop (a b : S) : inv (a ⊙ b) = (inv b) ⊙ (inv a) := by
+rw [← id_binop (inv b), binop_assoc]
+rw [← binop_left_inv (a ⊙ b),binop_assoc]
+rw [binop_assoc]
 simp
 
-@[simp] theorem one_inv : inv one = (one : S) := by
-rw [← mul_one (inv one)]
-rw [mul_left_inv]
+@[simp] theorem id_inv : inv id = (id : S) := by
+rw [← binop_id (inv id)]
+rw [binop_left_inv]
 
 @[simp] theorem inv_inv (a : S) : inv (inv a) = a := by
-apply mul_left_cancel (inv a)
+apply binop_left_cancel (inv a)
 simp
 
 class abelian_group (A : Type u) extends group A :=
-  mul_comm : ∀ (a b : A), mul a b = mul b a
+  binop_comm : ∀ (a b : A), binop a b = binop b a
 
 namespace abelian_group
 variable (K : Type u) [abelian_group K]
 
-@[simp] theorem group_commutator_eq_one (a b : K) : (inv a) ⊙ (inv b) ⊙ a ⊙ b = one := by
-rw [← mul_comm a, ← mul_assoc a]
+@[simp] theorem group_commutator_eq_id (a b : K) : (inv a) ⊙ (inv b) ⊙ a ⊙ b = id := by
+rw [← binop_comm a, ← binop_assoc a]
 simp
